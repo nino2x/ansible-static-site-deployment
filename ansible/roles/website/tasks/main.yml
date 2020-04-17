@@ -1,0 +1,15 @@
+- name: Copy site content
+  copy:
+    src: ../content/
+    dest: /usr/share/nginx/html/
+
+- name: Copy site configs
+  copy:
+    src: site.conf
+    dest: /etc/nginx/conf.d/
+
+- name: Reload Nginx service config
+  systemd:
+    name: nginx.service
+    state: reloaded
+

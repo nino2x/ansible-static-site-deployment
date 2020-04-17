@@ -1,0 +1,82 @@
+- set_fact:
+    prometheus_exporters: "{{ groups['all'] }}"
+
+- name: Create user prometheus
+  user:
+    name: prometheus
+    shell: /bin/false
+    create_home: no
+
+- name: Create prometheus directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Download and extract prometheus archive
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v2.17.1/prometheus-2.17.1.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy prometheus binaries
+  copy:
+    src: /tmp/prometheus-2.17.1.linux-amd64/{{ item }}
+    dest: /usr/local/bin
+    remote_src: yes
+    mode: preserve
+    owner: prometheus
+    group: prometheus
+  loop:
+    - prometheus
+    - promtool
+
+- name: Copy prometheus files
+  copy:
+    src: /tmp/prometheus-2.17.1.linux-amd64/{{ item }}
+    dest: /etc/prometheus
+    remote_src: yes
+    owner: prometheus
+    group: prometheus
+  loop:
+    - consoles
+    - console_libraries
+
+- name: Template prometheus configuration
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+
+- name: Copy prometheus service file
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system
+
+- name: Start and enable prometheus service
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Copy nginx prometheus config
+  copy:
+    src: prometheus.conf
+    dest: /etc/nginx/conf.d
+
+- name: Reload nginx configs
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: Reload prometheus config
+  systemd:
+    name: prometheus
+    state: reloaded
+

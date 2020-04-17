@@ -1,0 +1,8 @@
+- hosts: monitoring
+  become: yes
+  roles:
+    - nginx
+    - prometheus
+    - grafana
+    - nginx_prometheus_exporter
+

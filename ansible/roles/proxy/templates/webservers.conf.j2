@@ -1,0 +1,5 @@
+upstream webservers {
+{% for item in content_webservers %}
+    server {{ item }};
+{% endfor %}
+}

@@ -1,0 +1,22 @@
+- name: Download Nginx Prometheus exporter archive
+  get_url:
+    url: https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.6.0/nginx-prometheus-exporter-0.6.0-linux-amd64.tar.gz
+    dest: /tmp/nginx-prometheus-exporter.tar.gz
+
+- name: Extract Nginx Prometheus exporter
+  unarchive:
+    src: /tmp/nginx-prometheus-exporter.tar.gz
+    dest: /usr/local/bin
+    remote_src: yes
+
+- name: Create Nginx Prometheus exporter service
+  copy:
+    src: nginx-prometheus-exporter.service
+    dest: /etc/systemd/system/
+
+- name: Enable and restart exporter service
+  systemd:
+    name: nginx-prometheus-exporter
+    enabled: yes
+    state: restarted
+

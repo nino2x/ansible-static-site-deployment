@@ -1,0 +1,7 @@
+- hosts: webservers
+  become: yes
+  roles:
+    - nginx
+    - website
+    - nginx_prometheus_exporter
+

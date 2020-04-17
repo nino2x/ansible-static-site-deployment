@@ -1,0 +1,18 @@
+- set_fact:
+    content_webservers: "{{ groups['webservers'] }}"
+
+- name: Template nginx upstreams config
+  template:
+    src: webservers.conf.j2
+    dest: /etc/nginx/conf.d/upstreams/webservers.conf
+
+- name: Copy nginx loadbalancer config
+  copy:
+    src: proxy.conf
+    dest: /etc/nginx/conf.d/proxy.conf
+
+- name: Reload nginx configs
+  systemd:
+    name: nginx
+    state: reloaded
+

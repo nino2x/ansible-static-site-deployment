@@ -1,0 +1,52 @@
+- name: Add grafana GPG key
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+
+- name: Add grafana repo to apt sources
+  apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"
+    state: present
+    filename: grafana
+
+- name: Install grafana
+  apt:
+    name: grafana
+    state: latest
+    update_cache: yes
+
+- name: Copy grafana config
+  copy:
+    src: grafana.ini
+    dest: /etc/grafana
+    group: grafana
+
+- name: Copy grafana dashboards
+  copy:
+    src: dashboards
+    dest: /var/lib/grafana/dashboards
+    owner: grafana
+    group: grafana
+
+- name: Copy grafana provisioning configs
+  copy:
+    src: provisioning/
+    dest: /etc/grafana/provisioning
+    group: grafana
+
+- name: Enable and start grafana service
+  systemd:
+    name: grafana-server
+    enabled: yes
+    state: started
+
+- name: Copy nginx grafana config
+  copy:
+    src: grafana.conf
+    dest: /etc/nginx/conf.d
+
+- name: Reload nginx configs
+  systemd:
+    name: nginx
+    state: reloaded
+

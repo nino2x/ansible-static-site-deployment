@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'nginx'
+    static_configs:
+      - targets:
+        - 'dev_frontend_exporter_1:9113'
+        - 'dev_frontend_exporter_2:9113'

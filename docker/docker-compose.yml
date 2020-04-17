@@ -1,0 +1,61 @@
+version: "3.7"
+services:
+  proxy:
+    container_name: dev_proxy
+    image: proxy:0.1
+    build: ./proxy
+    networks:
+      - net
+
+  frontend_1:
+    container_name: dev_frontend_1
+    image: web_server:0.1
+    build: ./nginx
+    networks:
+      - net
+    volumes:
+      - ../content:/usr/share/nginx/html
+  monitor-export_1:
+    container_name: dev_frontend_exporter_1
+    image: nginx/nginx-prometheus-exporter:0.6.0
+    networks:
+      - net
+    command: -nginx.scrape-uri http://dev_frontend_1:8080/stub_status
+    depends_on:
+      - frontend_1
+    
+  frontend_2:
+    container_name: dev_frontend_2
+    image: web_server:0.1
+    build: ./nginx
+    networks:
+      - net
+    volumes:
+      - ../content:/usr/share/nginx/html
+  monitor-export_2:
+    container_name: dev_frontend_exporter_2
+    image: nginx/nginx-prometheus-exporter:0.6.0
+    networks:
+      - net
+    command: -nginx.scrape-uri http://dev_frontend_2:8080/stub_status
+    depends_on:
+      - frontend_2
+    
+  prometheus:
+    container_name: dev_prometheus
+    build: ./prometheus
+    networks:
+      - net
+
+  grafana:
+    container_name: dev_grafana
+    image: dev_grafana:0.1
+    build: ./grafana
+    networks:
+      - net
+    depends_on:
+      - prometheus
+
+networks:
+  net:
+    name: task-net
